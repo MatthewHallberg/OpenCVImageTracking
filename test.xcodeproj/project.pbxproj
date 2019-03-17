@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2250E4FF223ED7ED00ECAEF6 /* Info.plist in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2250E4FE223ED7ED00ECAEF6 /* Info.plist */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		229703E7223E2DED00240DF2 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 229703E6223E2DED00240DF2 /* main.cpp */; };
 /* End PBXBuildFile section */
 
@@ -18,17 +17,14 @@
 			dstPath = usr/share/man/man1;
 			dstSubfolderSpec = 16;
 			files = (
-				2250E4FF223ED7ED00ECAEF6 /* Info.plist in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 1;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		2250E4FE223ED7ED00ECAEF6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		229703E3223E2DED00240DF2 /* test */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = test; sourceTree = BUILT_PRODUCTS_DIR; };
 		229703E6223E2DED00240DF2 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
-		22C9BCA6223ED4E9003A0103 /* lbpcascade_frontalface.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = lbpcascade_frontalface.xml; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,9 +57,7 @@
 		229703E5223E2DED00240DF2 /* test */ = {
 			isa = PBXGroup;
 			children = (
-				2250E4FE223ED7ED00ECAEF6 /* Info.plist */,
 				229703E6223E2DED00240DF2 /* main.cpp */,
-				22C9BCA6223ED4E9003A0103 /* lbpcascade_frontalface.xml */,
 			);
 			path = test;
 			sourceTree = "<group>";
