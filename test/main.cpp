@@ -55,7 +55,9 @@ int main(int argc, const char * argv[]) {
         
         // Find 2 nearest matches
         vector<vector<DMatch> > knn_matches;
-        matcher->knnMatch( cameraDescriptors, trackerDescriptors, knn_matches, 2 );
+        if (trackerDescriptors.cols == cameraDescriptors.cols){
+            matcher->knnMatch( trackerDescriptors, cameraDescriptors, knn_matches, 2 );
+        }
         
         //Filter matches using the Lowes ratio test
         const float ratio_thresh = 0.75f;
@@ -73,9 +75,40 @@ int main(int argc, const char * argv[]) {
             good_matches.clear();
         }
         
-        Mat showMatches;
-        drawMatches(cameraFrame, cameraKeyPoints, trackerGray, trackerKeyPoints, good_matches, showMatches);
-        imshow("output", showMatches);
+        //Draw matches
+        Mat img_matches;
+        drawMatches( trackerGray, trackerKeyPoints, cameraFrame, cameraKeyPoints, good_matches, img_matches);
+        //Localize the object
+        vector<Point2f> obj;
+        vector<Point2f> scene;
+        for( size_t i = 0; i < good_matches.size(); i++ ){
+            //Get keypoints from the good matches
+            obj.push_back( trackerKeyPoints[ good_matches[i].queryIdx ].pt );
+            scene.push_back( cameraKeyPoints[ good_matches[i].trainIdx ].pt );
+        }
+        //if we have matches find homography
+        if (good_matches.size() > 0){
+            Mat H = findHomography( obj, scene, RANSAC );
+            //Get corners from image we are detecting
+            std::vector<Point2f> obj_corners(4);
+            obj_corners[0] = Point2f(0, 0);
+            obj_corners[1] = Point2f( (float)trackerGray.cols, 0 );
+            obj_corners[2] = Point2f( (float)trackerGray.cols, (float)trackerGray.rows );
+            obj_corners[3] = Point2f( 0, (float)trackerGray.rows );
+            std::vector<Point2f> scene_corners(4);
+            perspectiveTransform( obj_corners, scene_corners, H);
+            //Draw lines between the corners of mapped object in scene
+            line( img_matches, scene_corners[0] + Point2f((float)trackerGray.cols, 0),
+                 scene_corners[1] + Point2f((float)trackerGray.cols, 0), Scalar(0, 255, 0), 4 );
+            line( img_matches, scene_corners[1] + Point2f((float)trackerGray.cols, 0),
+                 scene_corners[2] + Point2f((float)trackerGray.cols, 0), Scalar( 0, 255, 0), 4 );
+            line( img_matches, scene_corners[2] + Point2f((float)trackerGray.cols, 0),
+                 scene_corners[3] + Point2f((float)trackerGray.cols, 0), Scalar( 0, 255, 0), 4 );
+            line( img_matches, scene_corners[3] + Point2f((float)trackerGray.cols, 0),
+                 scene_corners[0] + Point2f((float)trackerGray.cols, 0), Scalar( 0, 255, 0), 4 );
+        }
+
+        imshow("Camera View", img_matches );
         
         //Waits 50 miliseconds for key press, returns -1 if no key is pressed during that time
         if (waitKey(50) >= 0)
