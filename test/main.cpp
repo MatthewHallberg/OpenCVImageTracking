@@ -13,24 +13,24 @@ int main(int argc, const char * argv[]) {
     //TestOne();
     //TestTwo();
     
-    const int MAX_FEATURES = 300;//was 500
-    const float MIN_MATCHES = 50;
+    const int MAX_FEATURES = 1000;//was 500
+    const int MIN_FEATURES = 15;
     
     // Read tracker image
-    string trackerFileName("card.jpg");
+    //string trackerFileName("card.jpg");
     //string trackerFileName("6ft.PNG");
+    string trackerFileName("dollar.jpg");
     cout << "Reading tracker image : " << trackerFileName << endl;
-    Mat trackerMat = imread(trackerFileName);
-    
-    //convert tracker to grayscale
-    Mat trackerGray;
-    cvtColor(trackerMat, trackerGray, COLOR_BGR2GRAY);
+    Mat trackerGray = imread(trackerFileName, IMREAD_GRAYSCALE);
 
-    // Detect ORB features and compute descriptors for tracker
-    Ptr<Feature2D> orb = ORB::create(MAX_FEATURES);
+    //Create detector and matcher
+    Ptr<ORB> detector = ORB::create(MAX_FEATURES);
+    Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create(DescriptorMatcher::BRUTEFORCE_HAMMING);
+    
+    //Detect ORB features and compute descriptors for tracker
     vector<KeyPoint> trackerKeyPoints;
     Mat trackerDescriptors;
-    orb->detectAndCompute(trackerGray, Mat(), trackerKeyPoints, trackerDescriptors);
+    detector->detectAndCompute(trackerGray, Mat(), trackerKeyPoints, trackerDescriptors);
     
     //Capture stream from webcam.
     VideoCapture capture(0);
@@ -48,44 +48,38 @@ int main(int argc, const char * argv[]) {
         //Read an image from the camera.
         capture.read(cameraFrame);
         
-        //convert camera frame to grayscale
-        Mat cameraGray;
-        cvtColor(cameraFrame, cameraGray, COLOR_BGR2GRAY);
-        
         // Detect ORB features and compute descriptors for camera
-        Ptr<Feature2D> orb = ORB::create(MAX_FEATURES);
         Mat cameraDescriptors;
         vector<KeyPoint> cameraKeyPoints;
-        orb->detectAndCompute(cameraGray, Mat(), cameraKeyPoints, cameraDescriptors);
-    
-        //cameraDescriptors.convertTo(cameraDescriptors, CV_32F);
-    
+        detector->detectAndCompute(cameraFrame, Mat(), cameraKeyPoints, cameraDescriptors);
+        
         // Find 2 nearest matches
-        vector<vector<DMatch>> matches;
-        BFMatcher matcher;
-        matcher.knnMatch(cameraDescriptors, trackerDescriptors, matches, 2);
-        vector<cv::DMatch> good_matches;
+        vector<vector<DMatch> > knn_matches;
+        matcher->knnMatch( cameraDescriptors, trackerDescriptors, knn_matches, 2 );
         
         //Filter matches using the Lowes ratio test
-        float ratio = .75;
-        for (int i = 0; i < matches.size(); ++i) {
-            if (matches[i][0].distance < ratio * matches[i][1].distance) {
-                good_matches.push_back(matches[i][0]);
+        const float ratio_thresh = 0.75f;
+        vector<DMatch> good_matches;
+        for (size_t i = 0; i < knn_matches.size(); i++){
+            if (knn_matches[i][0].distance < ratio_thresh * knn_matches[i][1].distance){
+                good_matches.push_back(knn_matches[i][0]);
             }
         }
         
         cout << good_matches.size() << endl;
-        //Draw matches
+        
+        //dont draw matches if less than threshold
+        if (good_matches.size() < MIN_FEATURES){
+            good_matches.clear();
+        }
+        
         Mat showMatches;
-        drawMatches(cameraGray, cameraKeyPoints, trackerGray, trackerKeyPoints, good_matches, showMatches);
-        //show camera frame in window called output
+        drawMatches(cameraFrame, cameraKeyPoints, trackerGray, trackerKeyPoints, good_matches, showMatches);
         imshow("output", showMatches);
-
+        
         //Waits 50 miliseconds for key press, returns -1 if no key is pressed during that time
         if (waitKey(50) >= 0)
             break;
     }
     return 0;
-    
-
 }
