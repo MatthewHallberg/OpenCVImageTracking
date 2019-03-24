@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		229703E7223E2DED00240DF2 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 229703E6223E2DED00240DF2 /* main.cpp */; };
+		22F9E76F2246FAD50080040D /* test1.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22F9E76D2246FAD50080040D /* test1.cpp */; };
+		22F9E7722246FBD60080040D /* test2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22F9E7702246FBD60080040D /* test2.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,6 +27,10 @@
 /* Begin PBXFileReference section */
 		229703E3223E2DED00240DF2 /* test */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = test; sourceTree = BUILT_PRODUCTS_DIR; };
 		229703E6223E2DED00240DF2 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		22F9E76D2246FAD50080040D /* test1.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = test1.cpp; sourceTree = "<group>"; };
+		22F9E76E2246FAD50080040D /* test1.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = test1.hpp; sourceTree = "<group>"; };
+		22F9E7702246FBD60080040D /* test2.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = test2.cpp; sourceTree = "<group>"; };
+		22F9E7712246FBD60080040D /* test2.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = test2.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,6 +64,10 @@
 			isa = PBXGroup;
 			children = (
 				229703E6223E2DED00240DF2 /* main.cpp */,
+				22F9E76D2246FAD50080040D /* test1.cpp */,
+				22F9E76E2246FAD50080040D /* test1.hpp */,
+				22F9E7702246FBD60080040D /* test2.cpp */,
+				22F9E7712246FBD60080040D /* test2.hpp */,
 			);
 			path = test;
 			sourceTree = "<group>";
@@ -119,6 +129,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				229703E7223E2DED00240DF2 /* main.cpp in Sources */,
+				22F9E76F2246FAD50080040D /* test1.cpp in Sources */,
+				22F9E7722246FBD60080040D /* test2.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

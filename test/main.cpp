@@ -1,74 +1,91 @@
-//
-//  main.cpp
-//  test
-//
-//  Created by matthew hallberg on 3/17/19.
-//  Copyright © 2019 matthew hallberg. All rights reserved.
-//
-
 #include <iostream>
 #include <opencv2/opencv.hpp>
+#include "opencv2/xfeatures2d.hpp"
+#include "opencv2/features2d.hpp"
+#include "test1.hpp"
+#include "test2.hpp"
+
+using namespace std;
+using namespace cv;
+using namespace cv::xfeatures2d;
 
 int main(int argc, const char * argv[]) {
+    //TestOne();
+    //TestTwo();
+    
+    const int MAX_FEATURES = 300;//was 500
+    const float MIN_MATCHES = 50;
+    
+    // Read tracker image
+    string trackerFileName("card.jpg");
+    //string trackerFileName("6ft.PNG");
+    cout << "Reading tracker image : " << trackerFileName << endl;
+    Mat trackerMat = imread(trackerFileName);
+    
+    //convert tracker to grayscale
+    Mat trackerGray;
+    cvtColor(trackerMat, trackerGray, COLOR_BGR2GRAY);
 
+    // Detect ORB features and compute descriptors for tracker
+    Ptr<Feature2D> orb = ORB::create(MAX_FEATURES);
+    vector<KeyPoint> trackerKeyPoints;
+    Mat trackerDescriptors;
+    orb->detectAndCompute(trackerGray, Mat(), trackerKeyPoints, trackerDescriptors);
+    
     //Capture stream from webcam.
-    cv::VideoCapture capture(0);
+    VideoCapture capture(0);
     
     //Check if we can get the webcam stream.
-    if(!capture.isOpened())
-    {  
-        std::cout << "Could not open camera" << std::endl;
+    if(!capture.isOpened()) {
+        cout << "Could not open camera" << std::endl;
         return -1;
     }
     
-    //OpenCV saves detection rules as something called a CascadeClassifier which
-    //    can be used to detect objects in images.
-    cv::CascadeClassifier faceCascade;
-    
-    
-    //We'll load the lbpcascade_frontalface.xml containing the rules to detect faces.
-    //The file should be right next to the binary.
-    if(!faceCascade.load("lbpcascade_frontalface.xml"))
-    {
-        std::cout << "Failed to load cascade classifier" << std::endl;
-        return -1;
-    }
-    
-    while (true)
-    {
+    while (true) {
         //This variable will hold the image from the camera.
-        cv::Mat cameraFrame;
+        Mat cameraFrame;
         
         //Read an image from the camera.
         capture.read(cameraFrame);
         
-        //This vector will hold the rectangle coordinates to a detection inside the image.
-        std::vector<cv::Rect> faces;
+        //convert camera frame to grayscale
+        Mat cameraGray;
+        cvtColor(cameraFrame, cameraGray, COLOR_BGR2GRAY);
         
-        //This function detects the faces in the image and
-        // places the rectangles of the faces in the vector.
-        //See the detectMultiScale() documentation for more details
-        // about the rest of the parameters.
-        faceCascade.detectMultiScale(
-                                     cameraFrame,
-                                     faces,
-                                     1.09,
-                                     3,
-                                     0 | cv::CASCADE_SCALE_IMAGE,
-                                     cv::Size(30, 30));
+        // Detect ORB features and compute descriptors for camera
+        Ptr<Feature2D> orb = ORB::create(MAX_FEATURES);
+        Mat cameraDescriptors;
+        vector<KeyPoint> cameraKeyPoints;
+        orb->detectAndCompute(cameraGray, Mat(), cameraKeyPoints, cameraDescriptors);
+    
+        //cameraDescriptors.convertTo(cameraDescriptors, CV_32F);
+    
+        // Find 2 nearest matches
+        vector<vector<DMatch>> matches;
+        BFMatcher matcher;
+        matcher.knnMatch(cameraDescriptors, trackerDescriptors, matches, 2);
+        vector<cv::DMatch> good_matches;
         
-        //Here we draw the rectangles onto the image with a red border of thikness 2.
-        for( size_t i = 0; i < faces.size(); i++ )
-            cv::rectangle(cameraFrame, faces[i], cv::Scalar(0, 0, 255), 2);
+        //Filter matches using the Lowes ratio test
+        float ratio = .75;
+        for (int i = 0; i < matches.size(); ++i) {
+            if (matches[i][0].distance < ratio * matches[i][1].distance) {
+                good_matches.push_back(matches[i][0]);
+            }
+        }
         
-        //Here we show the drawn image in a named window called "output".
-        cv::imshow("output", cameraFrame);
-        
+        cout << good_matches.size() << endl;
+        //Draw matches
+        Mat showMatches;
+        drawMatches(cameraGray, cameraKeyPoints, trackerGray, trackerKeyPoints, good_matches, showMatches);
+        //show camera frame in window called output
+        imshow("output", showMatches);
+
         //Waits 50 miliseconds for key press, returns -1 if no key is pressed during that time
-        if (cv::waitKey(50) >= 0)
+        if (waitKey(50) >= 0)
             break;
     }
-    
     return 0;
     
+
 }
