@@ -13,7 +13,7 @@ int main(int argc, const char * argv[]) {
     //TestOne();
     //TestTwo();
     
-    const int MAX_FEATURES = 1000;//was 500
+    const int MAX_FEATURES = 2000;//was 500
     const int MIN_FEATURES = 15;
     
     // Read tracker image
@@ -76,39 +76,39 @@ int main(int argc, const char * argv[]) {
         }
         
         //Draw matches
-        Mat img_matches;
-        drawMatches( trackerGray, trackerKeyPoints, cameraFrame, cameraKeyPoints, good_matches, img_matches);
+        //Mat img_matches;
+        //drawMatches( trackerGray, trackerKeyPoints, cameraFrame, cameraKeyPoints, good_matches, img_matches);
+        
         //Localize the object
-        vector<Point2f> obj;
-        vector<Point2f> scene;
+        vector<Point2f> objectMatchPoints;
+        vector<Point2f> cameraMatchPoints;
         for( size_t i = 0; i < good_matches.size(); i++ ){
             //Get keypoints from the good matches
-            obj.push_back( trackerKeyPoints[ good_matches[i].queryIdx ].pt );
-            scene.push_back( cameraKeyPoints[ good_matches[i].trainIdx ].pt );
+            objectMatchPoints.push_back( trackerKeyPoints[ good_matches[i].queryIdx ].pt );
+            cameraMatchPoints.push_back( cameraKeyPoints[ good_matches[i].trainIdx ].pt );
         }
         //if we have matches find homography
-        if (good_matches.size() > 0){
-            Mat H = findHomography( obj, scene, RANSAC );
+        if (good_matches.size() > 1){
+            Mat H = findHomography( objectMatchPoints, cameraMatchPoints, RANSAC );
             //Get corners from image we are detecting
-            std::vector<Point2f> obj_corners(4);
+            vector<Point2f> obj_corners(4);
             obj_corners[0] = Point2f(0, 0);
             obj_corners[1] = Point2f( (float)trackerGray.cols, 0 );
             obj_corners[2] = Point2f( (float)trackerGray.cols, (float)trackerGray.rows );
             obj_corners[3] = Point2f( 0, (float)trackerGray.rows );
-            std::vector<Point2f> scene_corners(4);
+            vector<Point2f> scene_corners(4);
             perspectiveTransform( obj_corners, scene_corners, H);
             //Draw lines between the corners of mapped object in scene
-            line( img_matches, scene_corners[0] + Point2f((float)trackerGray.cols, 0),
-                 scene_corners[1] + Point2f((float)trackerGray.cols, 0), Scalar(0, 255, 0), 4 );
-            line( img_matches, scene_corners[1] + Point2f((float)trackerGray.cols, 0),
-                 scene_corners[2] + Point2f((float)trackerGray.cols, 0), Scalar( 0, 255, 0), 4 );
-            line( img_matches, scene_corners[2] + Point2f((float)trackerGray.cols, 0),
-                 scene_corners[3] + Point2f((float)trackerGray.cols, 0), Scalar( 0, 255, 0), 4 );
-            line( img_matches, scene_corners[3] + Point2f((float)trackerGray.cols, 0),
-                 scene_corners[0] + Point2f((float)trackerGray.cols, 0), Scalar( 0, 255, 0), 4 );
+            line( cameraFrame, scene_corners[0],scene_corners[1], Scalar(0, 255, 0), 4 );
+            line( cameraFrame, scene_corners[1],scene_corners[2], Scalar( 0, 255, 0), 4 );
+            line( cameraFrame, scene_corners[2],scene_corners[3], Scalar( 0, 255, 0), 4 );
+            line( cameraFrame, scene_corners[3],scene_corners[0], Scalar( 0, 255, 0), 4 );
         }
-
-        imshow("Camera View", img_matches );
+        
+        //make window half the size
+        resize(cameraFrame, cameraFrame, Size(cameraFrame.cols/2, cameraFrame.rows/2));
+        namedWindow( "Camera", WINDOW_AUTOSIZE);
+        imshow("Camera", cameraFrame);
         
         //Waits 50 miliseconds for key press, returns -1 if no key is pressed during that time
         if (waitKey(50) >= 0)
