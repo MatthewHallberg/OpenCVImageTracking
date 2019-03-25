@@ -89,7 +89,7 @@ int main(int argc, const char * argv[]) {
         }
         //if we have matches find homography
         if (good_matches.size() > 1){
-            Mat H = findHomography( objectMatchPoints, cameraMatchPoints, RANSAC );
+            Mat homography = findHomography( objectMatchPoints, cameraMatchPoints, RANSAC, 5);
             //Get corners from image we are detecting
             vector<Point2f> obj_corners(4);
             obj_corners[0] = Point2f(0, 0);
@@ -97,12 +97,29 @@ int main(int argc, const char * argv[]) {
             obj_corners[2] = Point2f( (float)trackerGray.cols, (float)trackerGray.rows );
             obj_corners[3] = Point2f( 0, (float)trackerGray.rows );
             vector<Point2f> scene_corners(4);
-            perspectiveTransform( obj_corners, scene_corners, H);
+            perspectiveTransform( obj_corners, scene_corners, homography);
             //Draw lines between the corners of mapped object in scene
             line( cameraFrame, scene_corners[0],scene_corners[1], Scalar(0, 255, 0), 4 );
             line( cameraFrame, scene_corners[1],scene_corners[2], Scalar( 0, 255, 0), 4 );
             line( cameraFrame, scene_corners[2],scene_corners[3], Scalar( 0, 255, 0), 4 );
             line( cameraFrame, scene_corners[3],scene_corners[0], Scalar( 0, 255, 0), 4 );
+            
+            //calibration matrix of camera parameters
+            vector<Point3f> camParams(3);
+            //projection of optical center
+            float u0 = cameraFrame.cols/4; //half cam resolution as guess
+            float v0 = cameraFrame.rows/4; //half camera resolution as guess
+            //focal lengths 800 is a good guess?
+            float fu = 800;
+            float fv = 800;
+            camParams[0] = Point3f(fu,0,u0);
+            camParams[1] = Point3f(0,fv,v0);
+            camParams[2] = Point3f(0,0,1);
+            //inverse homography
+            homography = homography * (-1);
+            //rotate and translate
+            
+            
         }
         
         //make window half the size
