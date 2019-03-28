@@ -19,7 +19,8 @@ int main(int argc, const char * argv[]) {
     // Read tracker image
     //string trackerFileName("card.jpg");
     //string trackerFileName("6ft.PNG");
-    string trackerFileName("dollar.jpg");
+    //string trackerFileName("dollar.jpg");
+    string trackerFileName("pug.jpg");
     cout << "Reading tracker image : " << trackerFileName << endl;
     Mat trackerGray = imread(trackerFileName, IMREAD_GRAYSCALE);
 
@@ -104,22 +105,30 @@ int main(int argc, const char * argv[]) {
             line( cameraFrame, scene_corners[2],scene_corners[3], Scalar( 0, 255, 0), 4 );
             line( cameraFrame, scene_corners[3],scene_corners[0], Scalar( 0, 255, 0), 4 );
             
-            //calibration matrix of camera parameters
-            vector<Point3f> camParams(3);
             //projection of optical center
             float u0 = cameraFrame.cols/4; //half cam resolution as guess
             float v0 = cameraFrame.rows/4; //half camera resolution as guess
             //focal lengths 800 is a good guess?
             float fu = 800;
             float fv = 800;
-            camParams[0] = Point3f(fu,0,u0);
-            camParams[1] = Point3f(0,fv,v0);
-            camParams[2] = Point3f(0,0,1);
+            //calibration matrix of camera parameters
+            Mat camParams = (Mat_<double>(3,3) << fu, 0, u0, 0, fv, v0, 0, 0, 1);
             //inverse homography
             homography = homography * (-1);
             //rotate and translate
-            
-            
+            Mat rot_and_transl = camParams.inv() * homography;
+            Mat col_1 = rot_and_transl.col(0);
+            Mat col_2 = rot_and_transl.col(1);
+            Mat col_3 = rot_and_transl.col(2);
+            //normalise vectors
+            float l = sqrt(norm(col_1, 2) * norm(col_2, 2));
+            Mat rot_1 = col_1 / l;
+            Mat rot_2 = col_2 / l;
+            Mat translation = col_3 / l;
+            //orthominal basis
+            Mat c = rot_1 + rot_2;
+            Mat p = rot_1.cross(rot_2);
+            Mat d = c.cross(p);
         }
         
         //make window half the size
