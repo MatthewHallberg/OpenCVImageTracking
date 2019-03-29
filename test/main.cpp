@@ -13,14 +13,14 @@ int main(int argc, const char * argv[]) {
     //TestOne();
     //TestTwo();
     
-    const int MAX_FEATURES = 2000;//was 500
+    const int MAX_FEATURES = 3000;//was 500
     const int MIN_FEATURES = 15;
     
     // Read tracker image
     //string trackerFileName("card.jpg");
     //string trackerFileName("6ft.PNG");
-    //string trackerFileName("dollar.jpg");
-    string trackerFileName("pug.jpg");
+    string trackerFileName("dollar.jpg");
+    //string trackerFileName("pug.jpg");
     cout << "Reading tracker image : " << trackerFileName << endl;
     Mat trackerGray = imread(trackerFileName, IMREAD_GRAYSCALE);
 
@@ -129,6 +129,18 @@ int main(int argc, const char * argv[]) {
             Mat c = rot_1 + rot_2;
             Mat p = rot_1.cross(rot_2);
             Mat d = c.cross(p);
+            rot_1 =  (1 / sqrt(2)) * (c / norm(c, 2) + d / norm(d, 2));
+            rot_2 =  (1 / sqrt(2)) * (c / norm(c, 2) - d / norm(d, 2));
+            Mat rot_3 = rot_1.cross(rot_2);
+            Mat projection = Mat_<double>(4,3);
+            projection.row(0) = rot_1;
+            projection.row(1) = rot_2;
+            projection.row(2) = rot_3;
+            projection.row(3) = translation;
+            projection = projection.t();
+            Mat projMatrix = camParams * projection;
+            
+            
         }
         
         //make window half the size
