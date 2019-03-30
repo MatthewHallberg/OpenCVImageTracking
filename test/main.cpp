@@ -13,14 +13,14 @@ int main(int argc, const char * argv[]) {
     //TestOne();
     //TestTwo();
     
-    const int MAX_FEATURES = 3000;//was 500
+    const int MAX_FEATURES = 1500;//was 500
     const int MIN_FEATURES = 15;
     
     // Read tracker image
     //string trackerFileName("card.jpg");
     //string trackerFileName("6ft.PNG");
-    string trackerFileName("dollar.jpg");
-    //string trackerFileName("pug.jpg");
+    //string trackerFileName("dollar.jpg");
+    string trackerFileName("pug.jpg");
     cout << "Reading tracker image : " << trackerFileName << endl;
     Mat trackerGray = imread(trackerFileName, IMREAD_GRAYSCALE);
 
@@ -61,7 +61,7 @@ int main(int argc, const char * argv[]) {
         }
         
         //Filter matches using the Lowes ratio test
-        const float ratio_thresh = 0.75f;
+        const float ratio_thresh = 0.70f;//leave at .70
         vector<DMatch> good_matches;
         for (size_t i = 0; i < knn_matches.size(); i++){
             if (knn_matches[i][0].distance < ratio_thresh * knn_matches[i][1].distance){
@@ -90,7 +90,6 @@ int main(int argc, const char * argv[]) {
         }
         //if we have matches find homography
         if (good_matches.size() > 1){
-            Mat homography = findHomography( objectMatchPoints, cameraMatchPoints, RANSAC, 5);
             //Get corners from image we are detecting
             vector<Point2f> obj_corners(4);
             obj_corners[0] = Point2f(0, 0);
@@ -98,6 +97,7 @@ int main(int argc, const char * argv[]) {
             obj_corners[2] = Point2f( (float)trackerGray.cols, (float)trackerGray.rows );
             obj_corners[3] = Point2f( 0, (float)trackerGray.rows );
             vector<Point2f> scene_corners(4);
+            Mat homography = findHomography( objectMatchPoints, cameraMatchPoints, RANSAC);
             perspectiveTransform( obj_corners, scene_corners, homography);
             //Draw lines between the corners of mapped object in scene
             line( cameraFrame, scene_corners[0],scene_corners[1], Scalar(0, 255, 0), 4 );
