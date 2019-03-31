@@ -7,9 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2259377D225057800013C710 /* ARPipeline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2259377B225057800013C710 /* ARPipeline.cpp */; };
+		22593780225058140013C710 /* CameraCalibration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2259377E225058140013C710 /* CameraCalibration.cpp */; };
+		22593783225058650013C710 /* GeometryTypes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22593781225058650013C710 /* GeometryTypes.cpp */; };
+		22593786225058CC0013C710 /* Pattern.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22593784225058CC0013C710 /* Pattern.cpp */; };
+		225937892250591E0013C710 /* PatternDetector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 225937872250591E0013C710 /* PatternDetector.cpp */; };
 		229703E7223E2DED00240DF2 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 229703E6223E2DED00240DF2 /* main.cpp */; };
-		22F9E76F2246FAD50080040D /* test1.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22F9E76D2246FAD50080040D /* test1.cpp */; };
-		22F9E7722246FBD60080040D /* test2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 22F9E7702246FBD60080040D /* test2.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,12 +28,19 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		2259377B225057800013C710 /* ARPipeline.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ARPipeline.cpp; sourceTree = "<group>"; };
+		2259377C225057800013C710 /* ARPipeline.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ARPipeline.hpp; sourceTree = "<group>"; };
+		2259377E225058140013C710 /* CameraCalibration.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = CameraCalibration.cpp; sourceTree = "<group>"; };
+		2259377F225058140013C710 /* CameraCalibration.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = CameraCalibration.hpp; sourceTree = "<group>"; };
+		22593781225058650013C710 /* GeometryTypes.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = GeometryTypes.cpp; sourceTree = "<group>"; };
+		22593782225058650013C710 /* GeometryTypes.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = GeometryTypes.hpp; sourceTree = "<group>"; };
+		22593784225058CC0013C710 /* Pattern.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Pattern.cpp; sourceTree = "<group>"; };
+		22593785225058CC0013C710 /* Pattern.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Pattern.hpp; sourceTree = "<group>"; };
+		225937872250591E0013C710 /* PatternDetector.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = PatternDetector.cpp; sourceTree = "<group>"; };
+		225937882250591E0013C710 /* PatternDetector.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = PatternDetector.hpp; sourceTree = "<group>"; };
+		2259378A225059CB0013C710 /* DebugHelpers.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = DebugHelpers.hpp; sourceTree = "<group>"; };
 		229703E3223E2DED00240DF2 /* test */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = test; sourceTree = BUILT_PRODUCTS_DIR; };
 		229703E6223E2DED00240DF2 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
-		22F9E76D2246FAD50080040D /* test1.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = test1.cpp; sourceTree = "<group>"; };
-		22F9E76E2246FAD50080040D /* test1.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = test1.hpp; sourceTree = "<group>"; };
-		22F9E7702246FBD60080040D /* test2.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = test2.cpp; sourceTree = "<group>"; };
-		22F9E7712246FBD60080040D /* test2.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = test2.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,10 +74,17 @@
 			isa = PBXGroup;
 			children = (
 				229703E6223E2DED00240DF2 /* main.cpp */,
-				22F9E76D2246FAD50080040D /* test1.cpp */,
-				22F9E76E2246FAD50080040D /* test1.hpp */,
-				22F9E7702246FBD60080040D /* test2.cpp */,
-				22F9E7712246FBD60080040D /* test2.hpp */,
+				22593784225058CC0013C710 /* Pattern.cpp */,
+				22593785225058CC0013C710 /* Pattern.hpp */,
+				2259377B225057800013C710 /* ARPipeline.cpp */,
+				2259377C225057800013C710 /* ARPipeline.hpp */,
+				2259377E225058140013C710 /* CameraCalibration.cpp */,
+				2259377F225058140013C710 /* CameraCalibration.hpp */,
+				22593781225058650013C710 /* GeometryTypes.cpp */,
+				22593782225058650013C710 /* GeometryTypes.hpp */,
+				225937872250591E0013C710 /* PatternDetector.cpp */,
+				225937882250591E0013C710 /* PatternDetector.hpp */,
+				2259378A225059CB0013C710 /* DebugHelpers.hpp */,
 			);
 			path = test;
 			sourceTree = "<group>";
@@ -128,9 +145,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				22593780225058140013C710 /* CameraCalibration.cpp in Sources */,
+				2259377D225057800013C710 /* ARPipeline.cpp in Sources */,
+				225937892250591E0013C710 /* PatternDetector.cpp in Sources */,
+				22593786225058CC0013C710 /* Pattern.cpp in Sources */,
 				229703E7223E2DED00240DF2 /* main.cpp in Sources */,
-				22F9E76F2246FAD50080040D /* test1.cpp in Sources */,
-				22F9E7722246FBD60080040D /* test2.cpp in Sources */,
+				22593783225058650013C710 /* GeometryTypes.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -267,6 +287,7 @@
 					"-lopencv_imgcodecs",
 					"-lopencv_videoio",
 					"-lopencv_highgui",
+					"-lopencv_xfeatures2d",
 					"-lopencv_features2d",
 					"-lopencv_calib3d",
 					"-lopencv_videostab",
@@ -298,6 +319,7 @@
 					"-lopencv_imgcodecs",
 					"-lopencv_videoio",
 					"-lopencv_highgui",
+					"-lopencv_xfeatures2d",
 					"-lopencv_features2d",
 					"-lopencv_calib3d",
 					"-lopencv_videostab",
