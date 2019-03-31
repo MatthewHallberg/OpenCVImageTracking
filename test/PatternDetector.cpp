@@ -26,7 +26,6 @@ PatternDetector::PatternDetector(cv::Ptr<cv::FeatureDetector> detector,
 {
 }
 
-
 void PatternDetector::train(const Pattern& pattern)
 {
     // Store the pattern object
@@ -48,8 +47,6 @@ void PatternDetector::train(const Pattern& pattern)
 
 void PatternDetector::buildPatternFromImage(const cv::Mat& image, Pattern& pattern) const
 {
-    int numImages = 4;
-    float step = sqrtf(2.0f);
     
     // Store original image in pattern structure
     pattern.size = cv::Size(image.cols, image.rows);
@@ -84,7 +81,7 @@ void PatternDetector::buildPatternFromImage(const cv::Mat& image, Pattern& patte
 
 
 
-bool PatternDetector::findPattern(const cv::Mat& image, PatternTrackingInfo& info)
+bool PatternDetector::findPattern(cv::Mat image, PatternTrackingInfo& info)
 {
     // Convert input image to gray
     getGray(image, m_grayImg);
@@ -155,9 +152,9 @@ bool PatternDetector::findPattern(const cv::Mat& image, PatternTrackingInfo& inf
             
             // Transform contour with precise homography
             cv::perspectiveTransform(m_pattern.points2d, info.points2d, info.homography);
-#if _DEBUG
-            info.draw2dContour(tmp, CV_RGB(200,0,0));
-#endif
+            
+            //draw on image!
+            info.draw2dContour(image, CV_RGB(200,0,0));
         }
         else
         {
@@ -165,9 +162,9 @@ bool PatternDetector::findPattern(const cv::Mat& image, PatternTrackingInfo& inf
             
             // Transform contour with rough homography
             cv::perspectiveTransform(m_pattern.points2d, info.points2d, m_roughHomography);
-#if _DEBUG
-            info.draw2dContour(tmp, CV_RGB(0,200,0));
-#endif
+            
+            //draw on image!
+            info.draw2dContour(image, CV_RGB(200,0,0));
         }
     }
     

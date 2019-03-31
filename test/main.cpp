@@ -12,6 +12,8 @@ using namespace cv::xfeatures2d;
 
 int main(int argc, const char * argv[]) {
     
+    //TODO: actually do the camera calibration, change detectors, matchers, etc in pattern detector.hpp
+    
     // Change this calibration to yours:
     CameraCalibration calibration(526.58037684199849f, 524.65577209994706f, 318.41744018680112f, 202.96659047014398f);
     
@@ -22,6 +24,8 @@ int main(int argc, const char * argv[]) {
     string trackerFileName("pug.jpg");
     cout << "Reading tracker image : " << trackerFileName << endl;
     Mat patternImage = imread(trackerFileName, IMREAD_GRAYSCALE);
+    
+    ARPipeline pipeline(patternImage, calibration);
     
     //Capture stream from webcam.
     VideoCapture capture(0);
@@ -40,7 +44,6 @@ int main(int argc, const char * argv[]) {
         capture.read(cameraFrame);
         
         Size frameSize(cameraFrame.cols, cameraFrame.rows);
-        ARPipeline pipeline(patternImage, calibration);
         
         //check if image is detected
         if (pipeline.processFrame(cameraFrame)){
@@ -51,11 +54,10 @@ int main(int argc, const char * argv[]) {
     
         
         //make window half the size
-        //resize(cameraFrame, cameraFrame, Size(cameraFrame.cols/2, cameraFrame.rows/2));
+        resize(cameraFrame, cameraFrame, Size(cameraFrame.cols/2, cameraFrame.rows/2));
         namedWindow( "Camera", WINDOW_AUTOSIZE);
         imshow("Camera", cameraFrame);
         
-        //Waits 50 miliseconds for key press, returns -1 if no key is pressed during that time
         if (waitKey(50) >= 0)
             break;
     }
