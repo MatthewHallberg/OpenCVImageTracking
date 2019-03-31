@@ -11,11 +11,9 @@ using namespace cv;
 using namespace cv::xfeatures2d;
 
 int main(int argc, const char * argv[]) {
-    
-    //TODO: actually do the camera calibration, change detectors, matchers, etc in pattern detector.hpp
-    
+        
     // Change this calibration to yours:
-    CameraCalibration calibration(526.58037684199849f, 524.65577209994706f, 318.41744018680112f, 202.96659047014398f);
+    CameraCalibration calibration(26.3219, 26.3219, 551.665, 661.338);
     
     // Read tracker image
     //string trackerFileName("card.jpg");
