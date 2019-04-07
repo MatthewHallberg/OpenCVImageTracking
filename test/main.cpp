@@ -38,13 +38,8 @@ int main(int argc, const char * argv[]) {
     int frameCount = 0;
     vector<Rect> boxes;
     
-    //create tracker
     // Create multitracker
-    Ptr<MultiTracker> multiTracker = cv::MultiTracker::create();
-    // Initialize multitracker
-    for(int i=0; i < boxes.size(); i++){
-        multiTracker->add(TrackerBoosting::create(), cameraFrame, Rect2d(boxes[i]));
-    }
+    Ptr<MultiTracker> multiTracker = MultiTracker::create();
     
     //Check if we can get the webcam stream.
     if(!capture.isOpened()) {
@@ -63,6 +58,11 @@ int main(int argc, const char * argv[]) {
         
         //run detection
         if (frameCount % 5 == 0){
+            boxes.clear();
+            multiTracker->clear();
+            multiTracker = MultiTracker::create();
+            cout << "detecting: " << frameCount << endl;
+            //multiTracker.reset();
             //check if image is detected
             std::vector<cv::Point2f> objectPoints = pipeline.processFrame(cameraFrame);
             if (objectPoints.size() > 0){
@@ -75,27 +75,30 @@ int main(int argc, const char * argv[]) {
                 //for (size_t i = 0; i < objectPoints.size(); i++){
                 //  line(cameraFrame, objectPoints[i], objectPoints[ (i+1) % objectPoints.size() ], Scalar(255,0,0), 2, cv::LINE_AA);
                 //}
-                
-                boxes.clear();
+            
                 //find box to track
                 int width = objectPoints[1].x - objectPoints[0].x;
                 int height = objectPoints[2].y - objectPoints[0].y;
                 Rect2d box(objectPoints[0].x,objectPoints[0].y,width,height);
                 rectangle(cameraFrame, box, Scalar(255,0,0), 2, 1 );
-                boxes.push_back(box);
-                // Initialize multitracker
-                for(int i=0; i < boxes.size(); i++){
-                    multiTracker->add(TrackerBoosting::create(), cameraFrame, Rect2d(boxes[i]));
+                if (0 <= box.x && 0 <= box.width && box.x + box.width <= cameraFrame.cols
+                    && 0 <= box.y && 0 <= box.height && box.y + box.height <= cameraFrame.rows){
+                    // box within the image plane
+                    boxes.push_back(box);
+                    for(int i=0; i < boxes.size(); i++){
+                        //use CSRT, KCF, or MOSSE maybe MedianFlow
+                        multiTracker->add(TrackerMedianFlow::create(), cameraFrame, Rect2d(boxes[i]));
+                    }
                 }
             }
         } else {
+            cout << "tracking: " << frameCount << endl;
             //run tracking
             multiTracker->update(cameraFrame);
             // Draw tracked objects
             for(unsigned i=0; i<multiTracker->getObjects().size(); i++){
                 rectangle(cameraFrame, multiTracker->getObjects()[i], Scalar(255,0,0), 2, 1);
             }
-            
         }
         
         //make window half the size

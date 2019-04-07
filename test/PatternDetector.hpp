@@ -21,7 +21,7 @@ public:
      
      //best so far
      cv::Ptr<cv::FeatureDetector>     detector  = cv::ORB::create(1000),
-     cv::Ptr<cv::DescriptorExtractor> extractor = cv::BRISK::create(30),
+     cv::Ptr<cv::DescriptorExtractor> extractor = cv::BRISK::create(5),
      cv::Ptr<cv::DescriptorMatcher>   matcher   = cv::BFMatcher::create(cv::NORM_HAMMING, true), //use for orb etc.
      
     //cv::Ptr<cv::FeatureDetector>     detector  = cv::ORB::create(3000),
