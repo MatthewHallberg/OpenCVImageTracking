@@ -12,7 +12,7 @@ class ARPipeline
 public:
     ARPipeline(const cv::Mat& patternImage, const CameraCalibration& calibration);
     
-    bool processFrame(cv::Mat inputFrame);
+    std::vector<cv::Point2f> processFrame(cv::Mat inputFrame);
     
     const Transformation& getPatternLocation() const;
     

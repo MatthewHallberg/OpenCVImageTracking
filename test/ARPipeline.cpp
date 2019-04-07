@@ -7,16 +7,16 @@ ARPipeline::ARPipeline(const cv::Mat& patternImage, const CameraCalibration& cal
     m_patternDetector.train(m_pattern);
 }
 
-bool ARPipeline::processFrame(cv::Mat inputFrame)
+std::vector<cv::Point2f> ARPipeline::processFrame(cv::Mat inputFrame)
 {
-    bool patternFound = m_patternDetector.findPattern(inputFrame, m_patternInfo);
+    std::vector<cv::Point2f> objectPoints = m_patternDetector.findPattern(inputFrame, m_patternInfo);
     
-    if (patternFound)
+    if (objectPoints.size() > 0)
     {
         m_patternInfo.computePose(m_pattern, m_calibration);
     }
     
-    return patternFound;
+    return objectPoints;
 }
 
 const Transformation& ARPipeline::getPatternLocation() const

@@ -24,28 +24,11 @@ public:
      cv::Ptr<cv::DescriptorExtractor> extractor = cv::BRISK::create(30),
      cv::Ptr<cv::DescriptorMatcher>   matcher   = cv::BFMatcher::create(cv::NORM_HAMMING, true), //use for orb etc.
      
-//          cv::Ptr<cv::FeatureDetector>     detector  = cv::ORB::create(3000),
-//          cv::Ptr<cv::DescriptorExtractor> extractor = cv::xfeatures2d::FREAK::create(true, true),
-//          cv::Ptr<cv::DescriptorMatcher>   matcher   = cv::BFMatcher::create(cv::NORM_HAMMING, true), //use for orb etc.
+    //cv::Ptr<cv::FeatureDetector>     detector  = cv::ORB::create(3000),
+    //cv::Ptr<cv::DescriptorExtractor> extractor = cv::xfeatures2d::FREAK::create(true, true),
+    //cv::Ptr<cv::DescriptorMatcher>   matcher   = cv::BFMatcher::create(cv::NORM_HAMMING, true), //use for orb etc.
      
-     //default
-//     cv::Ptr<cv::FeatureDetector>     detector  = cv::ORB::create(1000),
-//     cv::Ptr<cv::DescriptorExtractor> extractor = cv::xfeatures2d::FREAK::create(false, false),
-//     cv::Ptr<cv::DescriptorMatcher>   matcher   = cv::BFMatcher::create(cv::NORM_HAMMING, true), //use for orb etc.
-
-     //best but slowest
-//     cv::Ptr<cv::FeatureDetector>     detector  = cv::ORB::create(2000),
-//     cv::Ptr<cv::DescriptorExtractor> extractor = cv::xfeatures2d::SURF::create(100,true),//best for rotation
-//     cv::Ptr<cv::DescriptorMatcher>   matcher   = cv::BFMatcher::create(cv::NORM_L2, true), //use for surf etc.
-     
-     
-     //worst
-//     cv::Ptr<cv::FeatureDetector>     detector  = cv::FastFeatureDetector::create(10,true),
-//     cv::Ptr<cv::DescriptorExtractor> extractor = cv::xfeatures2d::BriefDescriptorExtractor::create(),
-//     cv::Ptr<cv::DescriptorMatcher>   matcher   = cv::BFMatcher::create(cv::NORM_HAMMING, true), //use for orb etc.
-
-     
-     bool enableRatioTest                       = false
+     bool enableRatioTest = false
      );
     
     /**
@@ -63,7 +46,7 @@ public:
      * Tries to find a @pattern object on given @image.
      * The function returns true if succeeded and store the result (pattern 2d location, homography) in @info.
      */
-    bool findPattern(cv::Mat image, PatternTrackingInfo& info);
+    std::vector<cv::Point2f> findPattern(cv::Mat image, PatternTrackingInfo& info);
     
     bool enableRatioTest;
     bool enableHomographyRefinement;

@@ -297,6 +297,7 @@
 					"-lopencv_objdetect",
 					"-lopencv_ml",
 					"-lopencv_dnn",
+					"-lopencv_tracking",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -329,6 +330,7 @@
 					"-lopencv_objdetect",
 					"-lopencv_ml",
 					"-lopencv_dnn",
+					"-lopencv_tracking",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
