@@ -35,11 +35,11 @@ int main(int argc, const char * argv[]) {
     //Read an image from the camera.
     capture.read(cameraFrame);
     
-    int frameCount = 0;
-    vector<Rect> boxes;
+    //corners to track
+    vector<Point2f> corners;
+    Mat imageMask;
     
-    // Create multitracker
-    Ptr<MultiTracker> multiTracker = MultiTracker::create();
+    int frameCount = 0;
     
     //Check if we can get the webcam stream.
     if(!capture.isOpened()) {
@@ -53,19 +53,17 @@ int main(int argc, const char * argv[]) {
         
         //Read an image from the camera.
         capture.read(cameraFrame);
+        //convert to greyscale
+        cvtColor(cameraFrame, cameraFrame, CV_BGR2GRAY);
         
         Size frameSize(cameraFrame.cols, cameraFrame.rows);
         
         //run detection
         if (frameCount % 5 == 0){
-            boxes.clear();
-            multiTracker->clear();
-            multiTracker = MultiTracker::create();
-            cout << "detecting: " << frameCount << endl;
-            //multiTracker.reset();
             //check if image is detected
-            std::vector<cv::Point2f> objectPoints = pipeline.processFrame(cameraFrame);
+            vector<Point2f> objectPoints = pipeline.processFrame(cameraFrame);
             if (objectPoints.size() > 0){
+                
                 //get 3d position
                 //Transformation transformation = pipeline.getPatternLocation();
                 //Vector3 pos = transformation.t();
@@ -80,24 +78,40 @@ int main(int argc, const char * argv[]) {
                 int width = objectPoints[1].x - objectPoints[0].x;
                 int height = objectPoints[2].y - objectPoints[0].y;
                 Rect2d box(objectPoints[0].x,objectPoints[0].y,width,height);
-                rectangle(cameraFrame, box, Scalar(255,0,0), 2, 1 );
+                Point2f center = Point2f((float)objectPoints[0].x + width/2,(float)objectPoints[0].y + height/2);
+                
+                //draw rectangle around detection
+                //rectangle(cameraFrame, box, Scalar(255,0,0), 2, 1 );
+                
+                //draw circle at center
+                circle(cameraFrame,center,50,Scalar(255,0,0),-1);
+                
+                //make sure box is inside plane i.e detection is good
                 if (0 <= box.x && 0 <= box.width && box.x + box.width <= cameraFrame.cols
                     && 0 <= box.y && 0 <= box.height && box.y + box.height <= cameraFrame.rows){
-                    // box within the image plane
-                    boxes.push_back(box);
-                    for(int i=0; i < boxes.size(); i++){
-                        //use CSRT, KCF, or MOSSE maybe MedianFlow
-                        multiTracker->add(TrackerMedianFlow::create(), cameraFrame, Rect2d(boxes[i]));
-                    }
+                    corners.clear();
+                    //create mat from detection box
+                    imageMask = Mat (cameraFrame,box);
+                    //optical flow
+                    goodFeaturesToTrack(imageMask, corners, 500, 0.01, 10, Mat(),3,false,.04f);
                 }
             }
         } else {
-            cout << "tracking: " << frameCount << endl;
-            //run tracking
-            multiTracker->update(cameraFrame);
-            // Draw tracked objects
-            for(unsigned i=0; i<multiTracker->getObjects().size(); i++){
-                rectangle(cameraFrame, multiTracker->getObjects()[i], Scalar(255,0,0), 2, 1);
+            if (!corners.empty()){
+                vector<uchar> status;
+                vector<float> err;
+                Mat st;
+                int maxLevel = 2;
+                Size frameSize(imageMask.cols, imageMask.rows);
+                TermCriteria criteria(TermCriteria::COUNT|TermCriteria::EPS,20,0.03);
+                vector<Point2f> newCorners;
+                
+                
+                //not sure how this works yet shouldnt be image mask for first two params!!
+                calcOpticalFlowPyrLK(imageMask, imageMask, corners, newCorners, st, err, frameSize, maxLevel, criteria);
+
+                
+                
             }
         }
         
