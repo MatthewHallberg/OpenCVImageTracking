@@ -36,11 +36,15 @@ int main(int argc, const char * argv[]) {
     capture.read(cameraFrame);
     
     int frameCount = 0;
-    Rect2d box(287, 23, 86, 320);
+    vector<Rect> boxes;
     
     //create tracker
-    Ptr<Tracker> tracker = TrackerBoosting::create();
-    tracker->init(cameraFrame, box);
+    // Create multitracker
+    Ptr<MultiTracker> multiTracker = cv::MultiTracker::create();
+    // Initialize multitracker
+    for(int i=0; i < boxes.size(); i++){
+        multiTracker->add(TrackerBoosting::create(), cameraFrame, Rect2d(boxes[i]));
+    }
     
     //Check if we can get the webcam stream.
     if(!capture.isOpened()) {
@@ -58,7 +62,7 @@ int main(int argc, const char * argv[]) {
         Size frameSize(cameraFrame.cols, cameraFrame.rows);
         
         //run detection
-        if (frameCount % 15 == 0){
+        if (frameCount % 5 == 0){
             //check if image is detected
             std::vector<cv::Point2f> objectPoints = pipeline.processFrame(cameraFrame);
             if (objectPoints.size() > 0){
@@ -72,26 +76,28 @@ int main(int argc, const char * argv[]) {
                 //  line(cameraFrame, objectPoints[i], objectPoints[ (i+1) % objectPoints.size() ], Scalar(255,0,0), 2, cv::LINE_AA);
                 //}
                 
+                boxes.clear();
                 //find box to track
                 int width = objectPoints[1].x - objectPoints[0].x;
                 int height = objectPoints[2].y - objectPoints[0].y;
                 Rect2d box(objectPoints[0].x,objectPoints[0].y,width,height);
                 rectangle(cameraFrame, box, Scalar(255,0,0), 2, 1 );
-            } else {
-                //run tracking
-                // Update the tracking result
-                bool ok = tracker->update(cameraFrame, box);
-                if (ok){
-                    // Tracking success : Draw the tracked object
-                    rectangle(cameraFrame, box, Scalar( 255, 0, 0 ), 2, 1 );
-                } else {
-                    // Tracking failure detected.
-                    putText(cameraFrame, "Tracking failure detected", Point(100,80), FONT_HERSHEY_SIMPLEX, 0.75, Scalar(0,0,255),2);
+                boxes.push_back(box);
+                // Initialize multitracker
+                for(int i=0; i < boxes.size(); i++){
+                    multiTracker->add(TrackerBoosting::create(), cameraFrame, Rect2d(boxes[i]));
                 }
-                // Display tracker type on frame
-                putText(cameraFrame, "Tracker", Point(100,20), FONT_HERSHEY_SIMPLEX, 0.75, Scalar(50,170,50),2);
             }
+        } else {
+            //run tracking
+            multiTracker->update(cameraFrame);
+            // Draw tracked objects
+            for(unsigned i=0; i<multiTracker->getObjects().size(); i++){
+                rectangle(cameraFrame, multiTracker->getObjects()[i], Scalar(255,0,0), 2, 1);
+            }
+            
         }
+        
         //make window half the size
         resize(cameraFrame, cameraFrame, Size(cameraFrame.cols/2, cameraFrame.rows/2));
         namedWindow( "Camera", WINDOW_AUTOSIZE);
