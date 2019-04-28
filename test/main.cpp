@@ -97,13 +97,13 @@ int main(int argc, const char * argv[]) {
                     //optical flow
                     cv::goodFeaturesToTrack(cameraFrame,            // input, the image from which we want to know good features to track
                                             corners,    // output, the points will be stored in this output vector
-                                            100,                  // max points, maximum number of good features to track
+                                            500,                  // max points, maximum number of good features to track
                                             0.1,                // quality level, "minimal accepted quality of corners", the lower the more points we will get
-                                            1,                  // minDistance, minimum distance between points
+                                            10,                  // minDistance, minimum distance between points
                                             Mat(),               // mask
-                                            4,                   // block size
+                                            5,                   // block size
                                             true,              // useHarrisDetector, makes tracking a bit better when set to true
-                                            0.04                 // free parameter for harris detector
+                                            0.01                 // free parameter for harris detector
                                             );
                     cornerSubPix(cameraFrame, corners, subPixWinSize, Size(-1,-1), termcrit);
                     previousCamFrame = cameraFrame;
@@ -117,30 +117,35 @@ int main(int argc, const char * argv[]) {
             vector<Point2f> newCorners;
             
             //not sure how this works yet shouldnt be image mask for first two params!!
-            cv::calcOpticalFlowPyrLK(previousCamFrame,         // prev image
+            cv::calcOpticalFlowPyrLK(previousCamFrame,     // prev image
                                      cameraFrame,          // curr image
                                      oldCorners,           // find these points in the new image
                                      newCorners,           // result of found points
                                      status,               // output status vector, found points are set to 1
                                      err,                // each point gets an error value (see flag)
-                                     cv::Size(31, 31),     // size of the window at each pyramid level
-                                     3,                    // maxLevel - 0 = no pyramids, > 0 use this level of pyramids
+                                     cv::Size(30, 30),     // size of the window at each pyramid level
+                                     5,                    // maxLevel - 0 = no pyramids, > 0 use this level of pyramids
                                      termcrit,             // termination criteria
-                                     0,                    // flags OPTFLOW_USE_INITIAL_FLOW or OPTFLOW_LK_GET_MIN_EIGENVALS
-                                     0.1                   // minEigThreshold
+                                     0.01,                    // flags OPTFLOW_USE_INITIAL_FLOW or OPTFLOW_LK_GET_MIN_EIGENVALS
+                                     0.01                   // minEigThreshold
                                      );
             
-            Point2f center = Point2f((float)newCorners[0].x,(float)newCorners[0].y);
-            circle(cameraFrame,center,50,Scalar(255,0,0),-1);
 
+            for (int i = 0; i < newCorners.size(); i++){
+                Point2f center = Point2f((float)newCorners[i].x,(float)newCorners[i].y);
+                circle(cameraFrame,center,10,Scalar(0,255,0),-1);
+            }
             
             //show new point
-            int width = newCorners[1].x - newCorners[0].x;
-            int height = newCorners[2].y - newCorners[0].y;
-            Rect2d box(newCorners[0].x,newCorners[0].y,width,height);
+//            int width = newCorners[1].x - newCorners[0].x;
+//            int height = newCorners[2].y - newCorners[0].y;
+//            Rect2d box(newCorners[0].x,newCorners[0].y,width,height);
+            
+            
+            
             
             //draw rectangle around detection
-            rectangle(cameraFrame, box, Scalar(0,255,0), 2, 1 );
+            //rectangle(cameraFrame, box, Scalar(0,255,0), 2, 1 );
             
             swap(oldCorners, newCorners);
             swap(previousCamFrame, cameraFrame);
