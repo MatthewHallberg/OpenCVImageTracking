@@ -79,11 +79,10 @@ void PatternDetector::buildPatternFromImage(const cv::Mat& image, Pattern& patte
     extractFeatures(pattern.grayImg, pattern.keypoints, pattern.descriptors);
 }
 
-//std::vector<cv::Point2f> PatternDetector::getPoints(){
-//    std::vector<cv::Point2f> point2f_vector; //We define vector of point2f
-//    cv::KeyPoint::convert(m_pattern.keypoints, point2f_vector, std::vector< int >());
-//    return m_matches.;
-//}
+std::vector<cv::Point2f> matchingPoints;
+std::vector<cv::Point2f> PatternDetector::getPoints(){
+   return matchingPoints;
+}
 
 std::vector<cv::Point2f> PatternDetector::findPattern(cv::Mat image, PatternTrackingInfo& info)
 {
@@ -104,6 +103,12 @@ std::vector<cv::Point2f> PatternDetector::findPattern(cv::Mat image, PatternTrac
                                                        m_matches,
                                                        m_roughHomography);
     
+    //get matching points
+    matchingPoints.clear();
+    for (int i = 0; i < m_matches.size(); i++){
+        matchingPoints.push_back(m_queryKeypoints[m_matches[i].queryIdx].pt);
+    }
+    
     if (homographyFound)
     {
         // If homography refinement enabled improve found transformation
@@ -112,11 +117,9 @@ std::vector<cv::Point2f> PatternDetector::findPattern(cv::Mat image, PatternTrac
             // Warp image using found homography
             cv::warpPerspective(m_grayImg, m_warpedImg, m_roughHomography, m_pattern.size, cv::WARP_INVERSE_MAP | cv::INTER_CUBIC);
             
-            // Get refined matches:
+            // Detect features on warped image
             std::vector<cv::KeyPoint> warpedKeypoints;
             std::vector<cv::DMatch> refinedMatches;
-            
-            // Detect features on warped image
             extractFeatures(m_warpedImg, warpedKeypoints, m_queryDescriptors);
             
             // Match with pattern

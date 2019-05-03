@@ -37,8 +37,8 @@ int main(int argc, const char * argv[]) {
     
     //Optical flow stuff
     TermCriteria termcrit(TermCriteria::COUNT|TermCriteria::EPS,20,0.03);
-    vector<Point2f> corners;
-    vector<Point2f> oldCorners;
+    vector<Point2f> detectionPoints;
+    vector<Point2f> oldDetectionPoints;
     Mat previousCamFrame;
     
     int frameCount = 0;
@@ -62,7 +62,7 @@ int main(int argc, const char * argv[]) {
         
         //run detection
         if (frameCount % 20 == 0){
-            corners.clear();
+            detectionPoints.clear();
             //check if image is detected
             vector<Point2f> objectCorners = pipeline.processFrame(cameraFrame);
             if (objectCorners.size() > 0){
@@ -78,33 +78,34 @@ int main(int argc, const char * argv[]) {
                   line(cameraFrame, trackingInfo.points2d[i], trackingInfo.points2d[ (i+1) % trackingInfo.points2d.size() ], Scalar(0,0,0), 2, cv::LINE_AA);
                 }
                 
-                corners.clear();
-                
+                //get new match points
+                detectionPoints = pipeline.m_patternDetector.getPoints();
+                                
                 //optical flow
-                cv::goodFeaturesToTrack(cameraFrame,            // input, the image from which we want to know good features to track
-                                        corners,    // output, the points will be stored in this output vector
-                                        500,                  // max points, maximum number of good features to track
-                                        0.1,                // quality level, "minimal accepted quality of corners", the lower the more points we will get
-                                        .1,                  // minDistance, minimum distance between points
-                                        Mat(),               // mask
-                                        10,                   // block size
-                                        true,              // useHarrisDetector, makes tracking a bit better when set to true
-                                        0.001                 // free parameter for harris detector
-                                        );
+//                cv::goodFeaturesToTrack(cameraFrame,// input, the image from which we want to know good features to track
+//                                        detectionPoints,    // output, the points will be stored in this output vector
+//                                        500,                  // max points, maximum number of good features to track
+//                                        0.1,                // quality level, "minimal accepted quality of corners", the lower the more points we will get
+//                                        .1,                  // minDistance, minimum distance between points
+//                                        Mat(),               // mask
+//                                        10,                   // block size
+//                                        true,              // useHarrisDetector, makes tracking a bit better when set to true
+//                                        0.001                 // free parameter for harris detector
+//                                        );
                 previousCamFrame = cameraFrame;
-                oldCorners = corners;
+                oldDetectionPoints = detectionPoints;
             }
-        } else if (!corners.empty()){
+        } else if (!detectionPoints.empty()){
             
             vector<uchar> status;
             vector<float> err;
-            vector<Point2f> newCorners;
+            vector<Point2f> flowDectionPoints;
             
             //not sure how this works yet shouldnt be image mask for first two params!!
             cv::calcOpticalFlowPyrLK(previousCamFrame,     // prev image
                                      cameraFrame,          // curr image
-                                     oldCorners,           // find these points in the new image
-                                     newCorners,           // result of found points
+                                     oldDetectionPoints,           // find these points in the new image
+                                     flowDectionPoints,           // result of found points
                                      status,               // output status vector, found points are set to 1
                                      err,                // each point gets an error value (see flag)
                                      cv::Size(40, 40),     // size of the window at each pyramid level
@@ -113,25 +114,13 @@ int main(int argc, const char * argv[]) {
                                      0.1,                    // flags OPTFLOW_USE_INITIAL_FLOW or OPTFLOW_LK_GET_MIN_EIGENVALS
                                      0.01                   // minEigThreshold
                                      );
-            
 
-            for (int i = 0; i < newCorners.size(); i++){
-                Point2f center = Point2f((float)newCorners[i].x,(float)newCorners[i].y);
+            for (int i = 0; i < flowDectionPoints.size(); i++){
+                Point2f center = Point2f((float)flowDectionPoints[i].x,(float)flowDectionPoints[i].y);
                 circle(cameraFrame,center,10,Scalar(0,255,0),-1);
             }
             
-            //show new point
-//            int width = newCorners[1].x - newCorners[0].x;
-//            int height = newCorners[2].y - newCorners[0].y;
-//            Rect2d box(newCorners[0].x,newCorners[0].y,width,height);
-            
-            
-            
-            
-            //draw rectangle around detection
-            //rectangle(cameraFrame, box, Scalar(0,255,0), 2, 1 );
-            
-            swap(oldCorners, newCorners);
+            swap(oldDetectionPoints, flowDectionPoints);
             swap(previousCamFrame, cameraFrame);
         }
         
