@@ -19,7 +19,7 @@ std::vector<cv::Point2f> ARPipeline::processFrame(cv::Mat inputFrame)
     return objectPoints;
 }
 
-const Transformation& ARPipeline::getPatternLocation() const
+const PatternTrackingInfo& ARPipeline::getPatternLocation() const
 {
-    return m_patternInfo.pose3d;
+    return m_patternInfo;
 }

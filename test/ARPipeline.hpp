@@ -14,14 +14,15 @@ public:
     
     std::vector<cv::Point2f> processFrame(cv::Mat inputFrame);
     
-    const Transformation& getPatternLocation() const;
+    const PatternTrackingInfo& getPatternLocation() const;
     
     PatternDetector     m_patternDetector;
+    Pattern             m_pattern;
+
 private:
     
 private:
     CameraCalibration   m_calibration;
-    Pattern             m_pattern;
     PatternTrackingInfo m_patternInfo;
     //PatternDetector     m_patternDetector;
 };

@@ -47,11 +47,11 @@ public:
      * The function returns true if succeeded and store the result (pattern 2d location, homography) in @info.
      */
     std::vector<cv::Point2f> findPattern(cv::Mat image, PatternTrackingInfo& info);
+    std::vector<cv::Point2f> getPoints();
     
     bool enableRatioTest;
     bool enableHomographyRefinement;
     float homographyReprojectionThreshold;
-    
 protected:
     
     bool extractFeatures(const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints, cv::Mat& descriptors) const;

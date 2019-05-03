@@ -79,7 +79,11 @@ void PatternDetector::buildPatternFromImage(const cv::Mat& image, Pattern& patte
     extractFeatures(pattern.grayImg, pattern.keypoints, pattern.descriptors);
 }
 
-
+//std::vector<cv::Point2f> PatternDetector::getPoints(){
+//    std::vector<cv::Point2f> point2f_vector; //We define vector of point2f
+//    cv::KeyPoint::convert(m_pattern.keypoints, point2f_vector, std::vector< int >());
+//    return m_matches.;
+//}
 
 std::vector<cv::Point2f> PatternDetector::findPattern(cv::Mat image, PatternTrackingInfo& info)
 {
