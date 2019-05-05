@@ -35,11 +35,18 @@ int main(int argc, const char * argv[]) {
     //Read an image from the camera.
     capture.read(cameraFrame);
     
+    int detectionFrame = 15;
+    
     //Optical flow stuff
-    TermCriteria termcrit(TermCriteria::COUNT|TermCriteria::EPS,20,0.03);
+    TermCriteria termcrit(TermCriteria::COUNT|TermCriteria::EPS,20,0.001);
     vector<Point2f> detectionPoints;
     vector<Point2f> oldDetectionPoints;
     Mat previousCamFrame;
+    
+    //detection keypoints and extractors
+    cv::Ptr<cv::DescriptorExtractor> extractor = cv::ORB::create(200);
+    std::vector<cv::KeyPoint> detectedKeypoints;
+    Mat detectedDescriptors;
     
     int frameCount = 0;
     
@@ -61,12 +68,12 @@ int main(int argc, const char * argv[]) {
         Size frameSize(cameraFrame.cols, cameraFrame.rows);
         
         //run detection
-        if (frameCount % 15 == 0){
+        if (frameCount % detectionFrame == 0){
             detectionPoints.clear();
             //check if image is detected
             vector<Point2f> objectCorners = pipeline.processFrame(cameraFrame);
             if (objectCorners.size() > 0){
-                
+                cout << "detecting" << endl;
                 //get 3d position
                 //PatternTrackingInfo trackingInfo = pipeline.getPatternLocation();
                 //Transformation transformation = trackingInfo.pose3d;
@@ -87,33 +94,45 @@ int main(int argc, const char * argv[]) {
                 int width = objectCorners[1].x - objectCorners[0].x;
                 int height = objectCorners[2].y - objectCorners[0].y;
                 Rect box(objectCorners[0].x,objectCorners[0].y,width,height);
-                rectangle(cameraFrame, box, Scalar(0,0,0), 2, 1 );
-
-                cv::goodFeaturesToTrack(cameraFrame,// input, the image from which we want to know good features to track
-                                        detectionPoints,    // output, the points will be stored in this output vector
-                                        500,                  // max points, maximum number of good features to track
-                                        0.1,                // quality level, "minimal accepted quality of corners", the lower the more points we will get
-                                        .01,                  // minDistance, minimum distance between points
-                                        Mat(),               // mask
-                                        5,                   // block size
-                                        false,              // useHarrisDetector, makes tracking a bit better when set to true
-                                        0.01                 // free parameter for harris detector
-                                        );
                 
-                vector<Point2f> goodPoints;
-                //remove features not in box
-                for( int i = 0; i < detectionPoints.size(); i++ ) {
-                    if (detectionPoints[i].x > objectCorners[0].x && detectionPoints[i].x < objectCorners[0].x + width &&
-                        detectionPoints[i].y > objectCorners[0].y && detectionPoints[i].y < objectCorners[0].y + height){
-                        goodPoints.push_back(detectionPoints[i]);
+                //check if box is in bounds of camera
+                if ((box & cv::Rect(0, 0, cameraFrame.cols, cameraFrame.rows)) == box){
+                    
+                    //draw box around detection
+                    rectangle(cameraFrame, box, Scalar(0,0,0), 2, 1 );
+                    
+                    //get keypoints from detection box
+                    Mat boxImage = cameraFrame(box);
+                    extractor->detectAndCompute(boxImage, noArray(), detectedKeypoints, detectedDescriptors);
+                    
+                    //get features we will track for optical flow
+                    cv::goodFeaturesToTrack(cameraFrame,// input, the image from which we want to know good features to track
+                                            detectionPoints,    // output, the points will be stored in this output vector
+                                            500,                  // max points, maximum number of good features to track
+                                            0.1,                // quality level, "minimal accepted quality of corners", the lower the more points we will get
+                                            .01,                  // minDistance, minimum distance between points
+                                            Mat(),               // mask
+                                            5,                   // block size
+                                            false,              // useHarrisDetector, makes tracking a bit better when set to true
+                                            0.01                 // free parameter for harris detector
+                                            );
+                    
+                    vector<Point2f> goodPoints;
+                    //remove features not in box
+                    for( int i = 0; i < detectionPoints.size(); i++ ) {
+                        if (detectionPoints[i].x > objectCorners[0].x && detectionPoints[i].x < objectCorners[0].x + width &&
+                            detectionPoints[i].y > objectCorners[0].y && detectionPoints[i].y < objectCorners[0].y + height){
+                            goodPoints.push_back(detectionPoints[i]);
+                        }
                     }
-                }
-                
-                if (goodPoints.size() > 3){
-                    previousCamFrame = cameraFrame;
-                    oldDetectionPoints = goodPoints;
-                } else {
-                    detectionPoints.clear();
+                    
+                    if (goodPoints.size() > 3){
+                        previousCamFrame = cameraFrame;
+                        oldDetectionPoints = goodPoints;
+                        detectionFrame = 5000;
+                    } else {
+                        detectionPoints.clear();
+                    }
                 }
             }
         } else if (!detectionPoints.empty()){
@@ -135,19 +154,38 @@ int main(int argc, const char * argv[]) {
                                      0.1,                    // flags OPTFLOW_USE_INITIAL_FLOW or OPTFLOW_LK_GET_MIN_EIGENVALS
                                      0.01                   // minEigThreshold
                                      );
-
-            //draw all points
-//            for (int i = 0; i < flowDectionPoints.size(); i++){
-//                Point2f center = Point2f((float)flowDectionPoints[i].x,(float)flowDectionPoints[i].y);
-//                circle(cameraFrame,center,10,Scalar(0,255,0),-1);
-//            }
             
+            //make box around bounds of flow tracking points
             Rect bounds = boundingRect(flowDectionPoints);
-            rectangle(cameraFrame, bounds, Scalar(0,0,0), 2, 1 );
-
             
-            swap(oldDetectionPoints, flowDectionPoints);
-            swap(previousCamFrame, cameraFrame);
+            //get keypoints from detection box if in bounds
+            if ((bounds & cv::Rect(0, 0, cameraFrame.cols, cameraFrame.rows)) == bounds){
+                Mat boxImage = cameraFrame(bounds);
+                vector<KeyPoint> trackedKeypoints;
+                Mat trackedDescriptors;
+                extractor->detectAndCompute(boxImage, noArray(), trackedKeypoints, trackedDescriptors);
+                
+                if (trackedKeypoints.size() > detectedKeypoints.size()/3){
+                    //draw all points
+                    for (int i = 0; i < flowDectionPoints.size(); i++){
+                        Point2f center = Point2f((float)flowDectionPoints[i].x,(float)flowDectionPoints[i].y);
+                        circle(cameraFrame,center,10,Scalar(0,255,0),-1);
+                    }
+                    //draw box from optical flow points
+                    rectangle(cameraFrame, bounds, Scalar(0,0,0), 2, 1);
+                    
+                    swap(oldDetectionPoints, flowDectionPoints);
+                    swap(previousCamFrame, cameraFrame);
+                } else {
+                    //stop tracking and start detecting again
+                    detectionFrame = 2;
+                    detectionPoints.clear();
+                }
+            } else {
+                //stop tracking and start detecting again
+                detectionFrame = 2;
+                detectionPoints.clear();
+            }
         }
         
         //make window half the size
