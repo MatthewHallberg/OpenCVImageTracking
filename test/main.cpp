@@ -38,13 +38,13 @@ int main(int argc, const char * argv[]) {
     int detectionFrame = 15;
     
     //Optical flow stuff
-    TermCriteria termcrit(TermCriteria::COUNT|TermCriteria::EPS,20,0.001);
+    TermCriteria termcrit(TermCriteria::COUNT|TermCriteria::EPS,40,0.0001);
     vector<Point2f> detectionPoints;
     vector<Point2f> oldDetectionPoints;
     Mat previousCamFrame;
     
     //detection keypoints and extractors
-    cv::Ptr<cv::DescriptorExtractor> extractor = cv::ORB::create(200);
+    cv::Ptr<cv::DescriptorExtractor> extractor = cv::ORB::create(100);
     std::vector<cv::KeyPoint> detectedKeypoints;
     Mat detectedDescriptors;
     
@@ -73,7 +73,6 @@ int main(int argc, const char * argv[]) {
             //check if image is detected
             vector<Point2f> objectCorners = pipeline.processFrame(cameraFrame);
             if (objectCorners.size() > 0){
-                cout << "detecting" << endl;
                 //get 3d position
                 //PatternTrackingInfo trackingInfo = pipeline.getPatternLocation();
                 //Transformation transformation = trackingInfo.pose3d;
@@ -87,8 +86,6 @@ int main(int argc, const char * argv[]) {
                 
                 //get points to track from detection
                 //detectionPoints = pipeline.m_patternDetector.getPoints();
-                                
-                //get points to track from portion of image
                 
                 //first draw box instead of polygon
                 int width = objectCorners[1].x - objectCorners[0].x;
@@ -161,29 +158,60 @@ int main(int argc, const char * argv[]) {
             //get keypoints from detection box if in bounds
             if ((bounds & cv::Rect(0, 0, cameraFrame.cols, cameraFrame.rows)) == bounds){
                 Mat boxImage = cameraFrame(bounds);
+                
                 vector<KeyPoint> trackedKeypoints;
                 Mat trackedDescriptors;
                 extractor->detectAndCompute(boxImage, noArray(), trackedKeypoints, trackedDescriptors);
                 
                 if (trackedKeypoints.size() > detectedKeypoints.size()/3){
-                    //draw all points
-                    for (int i = 0; i < flowDectionPoints.size(); i++){
-                        Point2f center = Point2f((float)flowDectionPoints[i].x,(float)flowDectionPoints[i].y);
-                        circle(cameraFrame,center,10,Scalar(0,255,0),-1);
-                    }
-                    //draw box from optical flow points
-                    rectangle(cameraFrame, bounds, Scalar(0,0,0), 2, 1);
                     
-                    swap(oldDetectionPoints, flowDectionPoints);
-                    swap(previousCamFrame, cameraFrame);
+                    //find matches
+                    Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create(DescriptorMatcher::BRUTEFORCE_HAMMING);
+                    std::vector< std::vector<DMatch> > knn_matches;
+                    matcher->knnMatch( trackedDescriptors, detectedDescriptors, knn_matches, 2 );
+                    //-- Filter matches using the Lowe's ratio test
+                    const float ratio_thresh = 0.7f;
+                    vector<DMatch> good_matches;
+                    for (size_t i = 0; i < knn_matches.size(); i++) {
+                        if (knn_matches[i][0].distance < ratio_thresh * knn_matches[i][1].distance){
+                            good_matches.push_back(knn_matches[i][0]);
+                        }
+                    }
+                    
+                    if (good_matches.size() > 0){
+                        //find all points that match and convert from local space to screen space
+                        vector<Point2f> matchPoints;
+                        for (int i = 0; i < good_matches.size(); i++){
+                            Point2f point = trackedKeypoints[good_matches[i].queryIdx].pt;
+                            point.x += bounds.x;
+                            point.y += bounds.y;
+                            matchPoints.push_back(point);
+                        }
+                        
+                        //draw all points
+                        for (int i = 0; i < matchPoints.size(); i++){
+                            circle(cameraFrame,matchPoints[i],10,Scalar(0,255,0),-1);
+                        }
+                        
+                        //draw box from optical flow points
+                        Rect matchBounds = boundingRect(matchPoints);
+                        rectangle(cameraFrame, matchBounds, Scalar(0,0,0), 2, 1);
+                        
+                        swap(oldDetectionPoints, flowDectionPoints);
+                        swap(previousCamFrame, cameraFrame);
+                    } else {
+                        //stop tracking and start detecting again
+                        detectionFrame = 5;
+                        detectionPoints.clear();
+                    }
                 } else {
                     //stop tracking and start detecting again
-                    detectionFrame = 2;
+                    detectionFrame = 5;
                     detectionPoints.clear();
                 }
             } else {
                 //stop tracking and start detecting again
-                detectionFrame = 2;
+                detectionFrame = 5;
                 detectionPoints.clear();
             }
         }
